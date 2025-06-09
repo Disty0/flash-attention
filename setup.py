@@ -298,8 +298,15 @@ def build_for_rocm():
         print("RTZ IS USED")
 
     cc_flag.append(set_cc_flag())
-    if os.path.exists("/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/"):
-        cc_flag.append("--gcc-install-dir=/usr/lib/gcc/x86_64-pc-linux-gnu/14.2.1/")
+    if os.path.exists("/usr/lib/gcc/x86_64-pc-linux-gnu"):
+        gcc_path_list = os.listdir("/usr/lib/gcc/x86_64-pc-linux-gnu")
+        gcc_path_list.sort()
+        gcc_path_list.reverse()
+        if len(gcc_path_list) > 0 and float(gcc_path_list[0][:2]) >= 15:
+            for gcc_path in gcc_path_list:
+                if float(gcc_path[:2]) < 15:
+                    cc_flag.append("--gcc-install-dir=" + os.path.join("/usr/lib/gcc/x86_64-pc-linux-gnu", gcc_path))
+                    break
 
     fa_sources = ["csrc/flash_attn_rocm/flash_api.cpp"] + glob.glob(
         "csrc/flash_attn_rocm/src/*.cpp"
