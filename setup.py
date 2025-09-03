@@ -1,6 +1,4 @@
 # Adapted from https://github.com/NVIDIA/apex/blob/master/setup.py
-import sys
-import warnings
 import os
 import re
 import ast
@@ -298,7 +296,10 @@ def build_for_rocm():
         print("RTZ IS USED")
 
     cc_flag.append(set_cc_flag())
-    if os.path.exists("/usr/lib/gcc/x86_64-pc-linux-gnu"):
+    gcc_path = os.environ.get('GCC_PATH', '')
+    if len(gcc_path) > 0:
+        cc_flag.append("--gcc-install-dir=" + gcc_path)
+    elif os.path.exists("/usr/lib/gcc/x86_64-pc-linux-gnu"):
         gcc_path_list = os.listdir("/usr/lib/gcc/x86_64-pc-linux-gnu")
         gcc_path_list.sort()
         gcc_path_list.reverse()
