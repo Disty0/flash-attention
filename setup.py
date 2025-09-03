@@ -299,15 +299,21 @@ def build_for_rocm():
     gcc_path = os.environ.get('GCC_PATH', '')
     if len(gcc_path) > 0:
         cc_flag.append("--gcc-install-dir=" + gcc_path)
-    elif os.path.exists("/usr/lib/gcc/x86_64-pc-linux-gnu"):
-        gcc_path_list = os.listdir("/usr/lib/gcc/x86_64-pc-linux-gnu")
-        gcc_path_list.sort()
-        gcc_path_list.reverse()
-        if len(gcc_path_list) > 0 and float(gcc_path_list[0][:2]) >= 15:
-            for gcc_path in gcc_path_list:
-                if float(gcc_path[:2]) < 15:
-                    cc_flag.append("--gcc-install-dir=" + os.path.join("/usr/lib/gcc/x86_64-pc-linux-gnu", gcc_path))
-                    break
+    else:
+        found_gcc_path = False
+        for gcc_folder in ("/usr/lib/gcc/x86_64-pc-linux-gnu", "/usr/lib/gcc/x86_64-redhat-linux"):
+            if os.path.exists(gcc_folder):
+                gcc_path_list = os.listdir(gcc_folder)
+                gcc_path_list.sort()
+                gcc_path_list.reverse()
+                if len(gcc_path_list) > 0 and float(gcc_path_list[0][:2]) >= 15:
+                    for gcc_path in gcc_path_list:
+                        if float(gcc_path[:2]) < 15:
+                            cc_flag.append("--gcc-install-dir=" + os.path.join(gcc_folder, gcc_path))
+                            found_gcc_path = True
+                            break
+            if found_gcc_path:
+                break
 
     fa_sources = ["csrc/flash_attn_rocm/flash_api.cpp"] + glob.glob(
         "csrc/flash_attn_rocm/src/*.cpp"
